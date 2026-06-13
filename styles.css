@@ -375,3 +375,33 @@ body.modal-open{overflow:hidden}
 .fc-gallery-1 figure{margin:0 auto;max-width:420px;border-radius:12px;overflow:hidden;background:#fff;border:1px solid var(--border,#dde5ef)}
 .fc-gallery-1 img{width:100%;display:block}
 .fc-gallery-1 figcaption{padding:12px 14px;font-size:12px;color:var(--muted,#5A6A7E);font-style:italic;text-align:center}
+
+/* card cover images */
+.case-cover{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;z-index:0}
+.case-visual::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(8,16,32,.78) 0%,rgba(8,16,32,.12) 45%,rgba(8,16,32,.05) 100%);z-index:1}
+.case-tag{z-index:2}
+
+/* AI agents sub-cards */
+.fc-agents{display:flex;flex-direction:column;gap:18px;margin:8px 0 56px}
+.fc-agent{background:#fff;border:1px solid var(--border,#dde5ef);border-radius:16px;padding:22px 22px 20px}
+.fc-agent-head{display:flex;flex-direction:column;gap:3px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border,#eef2f7)}
+.fc-agent-name{font-family:"Oswald",sans-serif;font-weight:600;font-size:20px;color:var(--ink,#0A1830);letter-spacing:.01em}
+.fc-agent-role{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--cobalt,#2563EB)}
+.fc-agent-desc{font-size:14px;line-height:1.6;color:var(--muted,#475569);margin:0 0 14px}
+.fc-agent-tags{display:flex;flex-wrap:wrap;gap:7px}
+@media(max-width:640px){.fc-agents{display:flex;flex-direction:column;gap:18px;margin:8px 0 56px}}
+
+/* language-specific card cover (AI agents) */
+.cover-en{display:none}
+html[lang="en"] .cover-ru{display:none}
+html[lang="en"] .cover-en{display:block}
+
+/* AI agent shots + link */
+.fc-agent-shots{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.fc-agent-shots figure{margin:0;border-radius:10px;overflow:hidden;background:#fff;border:1px solid var(--border,#dde5ef)}
+.fc-agent-shots img{width:100%;height:150px;object-fit:cover;object-position:top;display:block}
+.fc-agent-shots figcaption{padding:9px 11px;font-size:11px;color:var(--muted,#5A6A7E);font-style:italic}
+.fc-agent-foot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-top:6px}
+.fc-agent-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#fff;background:var(--cobalt,#2563EB);padding:9px 16px;border-radius:10px;text-decoration:none;transition:background .2s,transform .2s;white-space:nowrap}
+.fc-agent-link:hover{background:#1e4fd1;transform:translateY(-1px)}
+@media(max-width:640px){.fc-agent-shots{grid-template-columns:1fr}.fc-agent-foot{flex-direction:column;align-items:flex-start}.fc-agent-link{width:100%;justify-content:center}}
