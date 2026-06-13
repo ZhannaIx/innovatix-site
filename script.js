@@ -172,18 +172,6 @@ window.addEventListener("load",()=>{
 
 
 /* ===== CASE CARD CLICK (avoiding nested anchor) ===== */
-document.querySelectorAll(".case-card-link[data-link]").forEach(card=>{
-  card.style.cursor = "none";
-  card.addEventListener("click", e=>{
-    /* if clicked on inner <a> (e.g. client link), let it work normally */
-    if(e.target.closest("a")) return;
-    const target = card.getAttribute("data-link");
-    if(target && target.startsWith("#")){
-      const el = document.querySelector(target);
-      if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
-    }
-  });
-});
 
 /* ===== CONTACT FORM ===== */
 const cf=document.getElementById("contactForm");
@@ -286,13 +274,16 @@ document.querySelectorAll(".lang-btn").forEach(btn=>{
     setTimeout(function(){ content.innerHTML = ""; }, 350);
   }
 
-  document.querySelectorAll(".case-card-link[data-case]").forEach(function(card){
-    card.style.cursor = "pointer";
-    card.addEventListener("click", function(e){
-      if(e.target.closest("a")) return; // let inner links work
-      openCase(card.getAttribute("data-case"));
-    });
+  // Event delegation: robust against timing, scroll clones, re-renders
+  document.addEventListener("click", function(e){
+    var link = e.target.closest(".case-card-link[data-case]");
+    if(!link) return;
+    if(e.target.closest("a")) return; // inner links (client) work normally
+    e.preventDefault();
+    openCase(link.getAttribute("data-case"));
   });
+  // visual: pointer cursor on case cards
+  document.querySelectorAll(".case-card-link[data-case]").forEach(function(c){ c.style.cursor="pointer"; });
 
   closeBtn.addEventListener("click", closeCase);
   overlay.addEventListener("click", function(e){
