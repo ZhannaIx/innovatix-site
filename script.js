@@ -250,3 +250,55 @@ document.querySelectorAll(".lang-btn").forEach(btn=>{
     updatePlaceholders();
   });
 });
+
+/* ===== CASE MODAL ===== */
+(function(){
+  var overlay = document.getElementById("caseModal");
+  var content = document.getElementById("caseModalContent");
+  var closeBtn = document.getElementById("caseModalClose");
+  var details = document.getElementById("caseDetails");
+  if(!overlay || !content || !details) return;
+
+  function applyLangTo(root){
+    // Re-apply current language to freshly injected content
+    var lang = document.documentElement.lang === "en" ? "en" : "ru";
+    root.querySelectorAll("[data-ru],[data-en]").forEach(function(el){
+      var val = el.getAttribute("data-" + lang);
+      if(val !== null) el.innerHTML = val;
+    });
+  }
+
+  function openCase(slug){
+    var tpl = document.getElementById("detail-" + slug);
+    if(!tpl) return;
+    content.innerHTML = tpl.innerHTML;
+    applyLangTo(content);
+    overlay.classList.add("open");
+    overlay.setAttribute("aria-hidden","false");
+    document.body.classList.add("modal-open");
+    content.scrollTop = 0;
+    overlay.scrollTop = 0;
+  }
+  function closeCase(){
+    overlay.classList.remove("open");
+    overlay.setAttribute("aria-hidden","true");
+    document.body.classList.remove("modal-open");
+    setTimeout(function(){ content.innerHTML = ""; }, 350);
+  }
+
+  document.querySelectorAll(".case-card-link[data-case]").forEach(function(card){
+    card.style.cursor = "pointer";
+    card.addEventListener("click", function(e){
+      if(e.target.closest("a")) return; // let inner links work
+      openCase(card.getAttribute("data-case"));
+    });
+  });
+
+  closeBtn.addEventListener("click", closeCase);
+  overlay.addEventListener("click", function(e){
+    if(e.target === overlay) closeCase();
+  });
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape" && overlay.classList.contains("open")) closeCase();
+  });
+})();
