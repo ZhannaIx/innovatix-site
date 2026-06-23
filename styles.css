@@ -405,3 +405,70 @@ html[lang="en"] .cover-en{display:block}
 .fc-agent-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#fff;background:var(--cobalt,#2563EB);padding:9px 16px;border-radius:10px;text-decoration:none;transition:background .2s,transform .2s;white-space:nowrap}
 .fc-agent-link:hover{background:#1e4fd1;transform:translateY(-1px)}
 @media(max-width:640px){.fc-agent-shots{grid-template-columns:1fr}.fc-agent-foot{flex-direction:column;align-items:flex-start}.fc-agent-link{width:100%;justify-content:center}}
+
+/* ===== ring metric cards (added) ===== */
+.canvas-wrap{background:radial-gradient(120% 100% at 50% 28%,rgba(37,99,235,.20),transparent 62%),#0A1830 !important;border:1px solid rgba(77,141,255,.18)}
+@media(max-width:900px){
+  .hero-right{display:flex !important;margin-top:36px}
+  .hero-right .metric-row{display:none}
+  .canvas-wrap{height:300px}
+}
+.cases .cases-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:52px}
+@media(max-width:980px){.cases .cases-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.cases .cases-grid{grid-template-columns:1fr}}
+.cases .case-card{position:relative;flex:none;background:linear-gradient(160deg,#0D1E3D,#0B1A35);border:1px solid #1E2E52;border-radius:18px;padding:26px 24px 24px;overflow:hidden;cursor:pointer;transition:transform .4s cubic-bezier(.2,.7,.2,1),border-color .4s}
+.cases .case-card::before{content:"";position:absolute;inset:0;background:radial-gradient(420px 200px at 80% -10%,rgba(37,99,235,.18),transparent 60%);opacity:0;transition:opacity .5s;pointer-events:none}
+.cases .case-card:hover{transform:translateY(-6px);border-color:rgba(77,141,255,.5)}
+.cases .case-card:hover::before{opacity:1}
+.cases .case-card-link::after{content:none !important}
+.cases .mr-top{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:2}
+.cases .mr-tag{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:#9DB0CE;display:inline-flex;align-items:center;gap:7px}
+.cases .mr-tag::before{content:"";width:6px;height:6px;border-radius:50%;background:#4D8DFF}
+.cases .mr-idx{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:12px;color:#46597E}
+.cases .mr-metric{position:relative;z-index:2;display:flex;align-items:center;gap:18px;margin:26px 0 24px}
+.cases .mr-ring{position:relative;width:96px;height:96px;flex:none}
+.cases .mr-ring svg{transform:rotate(-90deg);width:96px;height:96px}
+.cases .mr-track{fill:none;stroke:#1A2A4D;stroke-width:6}
+.cases .mr-prog{fill:none;stroke:url(#mrGrad);stroke-width:6;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1}
+.cases .mr-mid{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.cases .mr-mid span{font-family:'Oswald',system-ui,sans-serif;font-weight:600;font-size:23px;color:#fff;letter-spacing:-.01em}
+.cases .mr-txt{min-width:0}
+.cases .mr-big{font-family:'Oswald',system-ui,sans-serif;font-weight:600;font-size:40px;line-height:.95;color:#fff;letter-spacing:-.02em;display:flex;align-items:baseline;gap:1px}
+.cases .mr-big .mr-suf,.cases .mr-big .mr-pre{font-size:22px;color:#4D8DFF;font-weight:600}
+.cases .mr-lbl{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:#7C90B4;margin-top:10px;line-height:1.4}
+.cases .mr-title{position:relative;z-index:2;font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;font-size:22px;line-height:1.15;color:#fff;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;border-top:1px solid #1E2E52;padding-top:18px}
+.cases .mr-arrow{width:34px;height:34px;border-radius:8px;background:rgba(37,99,235,.14);display:flex;align-items:center;justify-content:center;flex:none;transition:.3s}
+.cases .mr-arrow svg{width:15px;height:15px;stroke:#4D8DFF}
+.cases .case-card:hover .mr-arrow{background:#2563EB}
+.cases .case-card:hover .mr-arrow svg{stroke:#fff}
+
+/* ===== hero particle sphere (added) ===== */
+.hero{display:block !important;position:relative;min-height:100svh;padding:0 !important;overflow:hidden;
+  background:radial-gradient(1200px 760px at 68% 44%,rgba(37,99,235,.20),transparent 60%),
+            radial-gradient(900px 600px at 10% 96%,rgba(34,211,238,.07),transparent 60%),#0A1830 !important}
+#heroSphere{position:absolute;inset:0;width:100%;height:100%;z-index:1;display:block;touch-action:none}
+.hero::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:linear-gradient(90deg,rgba(8,18,40,.74) 0%,rgba(8,18,40,.40) 38%,rgba(8,18,40,.12) 60%,transparent 80%)}
+.hero-overlay{position:relative;z-index:3;min-height:100svh;display:flex;align-items:center;
+  max-width:1200px;margin:0 auto;padding:120px 60px;pointer-events:none}
+.hero-overlay .hero-left{max-width:660px}
+.hero .hero-btns a,.hero .hero-badge{pointer-events:auto}
+.hero .hero-badge{background:rgba(12,28,64,.55) !important;border:1px solid rgba(122,184,255,.22) !important;
+  color:#cfe0f7 !important;box-shadow:none !important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.hero .hero-title{color:#fff !important}
+.hero .hero-sub{color:#AbBEDA !important}
+.hero .btn-ghost{color:#fff !important;border-color:rgba(122,184,255,.32) !important}
+.hero .btn-ghost:hover{border-color:#4D8DFF !important}
+.hero .hero-stats{border-top-color:rgba(122,184,255,.16) !important}
+.hero .stat-label{color:#90A4C6 !important}
+.hero-cue{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);z-index:3;
+  display:flex;flex-direction:column;align-items:center;gap:9px;pointer-events:none}
+.hero-cue span{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:#5D70A0;font-weight:600;font-family:ui-monospace,monospace}
+.hero-cue i{width:1px;height:38px;background:linear-gradient(#5D70A0,transparent);display:block;animation:heroCue 2.2s ease-in-out infinite}
+@keyframes heroCue{0%,100%{opacity:.3;transform:scaleY(.5)}50%{opacity:1;transform:scaleY(1)}}
+@media(max-width:900px){
+  .hero::after{background:linear-gradient(to top,rgba(8,18,40,.82) 6%,rgba(8,18,40,.28) 46%,transparent 72%)}
+  .hero-overlay{align-items:flex-end;padding:120px 24px 72px}
+  .hero-overlay .hero-left{max-width:100%}
+  .hero-cue{display:none}
+}

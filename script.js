@@ -27,97 +27,72 @@ document.addEventListener("mousemove",e=>{
   pbs.forEach(({el,d})=>{ el.style.transform=`translate(${px*d}px,${py*d}px)`; });
 });
 
-/* ===== PARTICLE SYSTEM (Canvas2D, no Three.js) ===== */
-(function initParticles(){
-  const wrap = document.querySelector(".canvas-wrap");
-  const canvas = document.getElementById("threeCanvas");
-  if(!wrap || !canvas) return;
-  const ctx = canvas.getContext("2d");
-  let W, H, DPR;
-  function resize(){
-    DPR = Math.min(window.devicePixelRatio||1, 2);
-    W = wrap.clientWidth; H = wrap.clientHeight;
-    canvas.width = W*DPR; canvas.height = H*DPR;
-    canvas.style.width = W+"px"; canvas.style.height = H+"px";
-    ctx.setTransform(DPR,0,0,DPR,0,0);
+/* ===== HERO PARTICLE SPHERE — full-bleed, breathing + reassembling ===== */
+(function(){
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const cv = document.getElementById('heroSphere');
+  if(!cv) return;
+  const ctx = cv.getContext('2d');
+  let W,H,DPR,cx,cy,scale;
+  const mobile = innerWidth < 900;
+  const N = mobile ? 950 : 1700;
+  const still = new URLSearchParams(location.search).get('still') !== null;
+
+  const home=new Float32Array(N*3);
+  (function(){const off=2/N,inc=Math.PI*(3-Math.sqrt(5));
+    for(let i=0;i<N;i++){const y=i*off-1+off/2,r=Math.sqrt(Math.max(0,1-y*y)),ph=i*inc;
+      home[i*3]=Math.cos(ph)*r;home[i*3+1]=y;home[i*3+2]=Math.sin(ph)*r;}})();
+  const scat=new Float32Array(N*3), stag=new Float32Array(N);
+  for(let i=0;i<N;i++){let ux=Math.random()*2-1,uy=Math.random()*2-1,uz=Math.random()*2-1;
+    const ul=Math.hypot(ux,uy,uz)||1;ux/=ul;uy/=ul;uz/=ul;const d=0.5+Math.random()*0.92;
+    scat[i*3]=home[i*3]+ux*d;scat[i*3+1]=home[i*3+1]+uy*d;scat[i*3+2]=home[i*3+2]+uz*d;stag[i]=Math.random();}
+  const cur=new Float32Array(N*3);cur.set(home);
+
+  let phase='hold',f=0,m=0;
+  const HOLD=mobile?480:600, OUT=150, CLOUD=54, IN=168, SPREAD=0.30;
+  const easeInOut=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2, easeOut=t=>1-Math.pow(1-t,3);
+
+  let pX=0,pY=0,tX=0,tY=0;
+  addEventListener('pointermove',e=>{tX=(e.clientX/innerWidth-.5);tY=(e.clientY/innerHeight-.5);},{passive:true});
+  addEventListener('deviceorientation',e=>{if(e.gamma!=null){tX=Math.max(-.6,Math.min(.6,e.gamma/45));tY=Math.max(-.4,Math.min(.4,(e.beta-40)/60));}},true);
+
+  function resize(){DPR=Math.min(2,devicePixelRatio||1);W=cv.clientWidth;H=cv.clientHeight;
+    cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
+    cx=W*0.5; cy=mobile?H*0.46:H*0.5; scale=Math.min(W,H)*(mobile?0.40:0.44);}
+  resize();addEventListener('resize',resize);
+
+  function step(){
+    if(!still&&!reduce){f++;
+      if(phase==='hold'){m=0;if(f>=HOLD){phase='out';f=0;}}
+      else if(phase==='out'){m=easeInOut(Math.min(1,f/OUT));if(f>=OUT){phase='cloud';f=0;m=1;}}
+      else if(phase==='cloud'){m=1;if(f>=CLOUD){phase='in';f=0;}}
+      else if(phase==='in'){m=1-easeInOut(Math.min(1,f/IN));if(f>=IN){phase='hold';f=0;m=0;}}
+    }else{m=0;}
+    const t=performance.now();
+    const breath=(still||reduce)?1:1+Math.sin(t*0.00126)*0.052;
+    for(let i=0;i<N;i++){let mi=(m-stag[i]*SPREAD)/(1-SPREAD);mi=mi<0?0:mi>1?1:mi;
+      const b=i*3,hx=home[b]*breath,hy=home[b+1]*breath,hz=home[b+2]*breath;
+      cur[b]=hx+(scat[b]-hx)*mi;cur[b+1]=hy+(scat[b+1]-hy)*mi;cur[b+2]=hz+(scat[b+2]-hz)*mi;}
+    return t;
   }
-  resize();
-  window.addEventListener("resize", resize);
-
-  const COUNT = Math.min(110, Math.floor(W*H/6500)); // density-based, capped
-  const COLORS = [
-    "rgba(230,240,255,", // ice white
-    "rgba(122,184,255,", // light blue
-    "rgba(6,182,212,"    // cyan
-  ];
-  const parts = [];
-  for(let i=0;i<COUNT;i++){
-    parts.push({
-      x: Math.random()*W, y: Math.random()*H,
-      bx: 0, by: 0,
-      vx: (Math.random()-0.5)*0.12,
-      vy: -(0.10+Math.random()*0.18), // drift up
-      r: 1.1+Math.random()*1.6,
-      c: COLORS[Math.floor(Math.random()*COLORS.length)],
-      a: 0.45+Math.random()*0.45,
-      ph: Math.random()*6.28
-    });
-  }
-
-  let mx=-999, my=-999;
-  wrap.addEventListener("mousemove", e=>{
-    const rect = canvas.getBoundingClientRect();
-    mx = e.clientX-rect.left; my = e.clientY-rect.top;
-  });
-  wrap.addEventListener("mouseleave", ()=>{ mx=-999; my=-999; });
-
-  const LINK = 88, LINK2 = LINK*LINK;
-  const REPEL = 70, REPEL2 = REPEL*REPEL;
-  let t = 0;
   function frame(){
-    t += 0.01;
+    const t=step();pX+=(tX-pX)*.05;pY+=(tY-pY)*.05;
+    const sway=(still||reduce)?0:(Math.sin(t*0.00026)*0.40 + t*0.00007);
+    const ay=sway+pX*0.8, ax=((still||reduce)?0:(Math.sin(t*0.00020)*0.06+0.05))+pY*0.45;
+    const cosY=Math.cos(ay),sinY=Math.sin(ay),cosX=Math.cos(ax),sinX=Math.sin(ax);
     ctx.clearRect(0,0,W,H);
-
-    // update
-    for(const p of parts){
-      p.y += p.vy;
-      p.x += p.vx + Math.sin(t+p.ph)*0.08;
-      if(p.y < -5){ p.y = H+5; p.x = Math.random()*W; }
-      if(p.x < -5) p.x = W+5;
-      if(p.x > W+5) p.x = -5;
-      // mouse repulsion
-      if(mx>-900){
-        const dx = p.x-mx, dy = p.y-my, d2 = dx*dx+dy*dy;
-        if(d2 < REPEL2 && d2>0.5){
-          const d = Math.sqrt(d2), f = (REPEL-d)/REPEL*2.2;
-          p.x += (dx/d)*f; p.y += (dy/d)*f;
-        }
-      }
-    }
-    // lines
-    for(let i=0;i<parts.length;i++){
-      const a = parts[i];
-      for(let j=i+1;j<parts.length;j++){
-        const b = parts[j];
-        const dx=a.x-b.x; if(dx*dx>LINK2) continue;
-        const dy=a.y-b.y; if(dy*dy>LINK2) continue;
-        const d2 = dx*dx+dy*dy;
-        if(d2<LINK2){
-          const op = (1 - d2/LINK2)*0.16;
-          ctx.strokeStyle = "rgba(122,184,255,"+op.toFixed(3)+")";
-          ctx.lineWidth = 0.7;
-          ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
-        }
-      }
-    }
-    // dots
-    for(const p of parts){
-      ctx.beginPath();
-      ctx.fillStyle = p.c + p.a + ")";
-      ctx.arc(p.x, p.y, p.r, 0, 6.2832);
-      ctx.fill();
-    }
-    requestAnimationFrame(frame);
+    const glow=ctx.createRadialGradient(cx,cy,0,cx,cy,scale*1.8);
+    const gi=Math.max(0,(0.14+Math.sin(t*0.0012)*0.05)*(1-m*0.7));
+    glow.addColorStop(0,'rgba(80,150,255,'+gi+')');glow.addColorStop(1,'rgba(80,150,255,0)');
+    ctx.fillStyle=glow;ctx.fillRect(0,0,W,H);
+    ctx.globalCompositeOperation='lighter';
+    for(let i=0;i<N;i++){let x=cur[i*3],y=cur[i*3+1],z=cur[i*3+2];
+      let x1=x*cosY+z*sinY,z1=-x*sinY+z*cosY;let y1=y*cosX-z1*sinX,z2=y*sinX+z1*cosX;
+      const dz=1.9-z2; const persp=1.9/(dz<0.45?0.45:dz);const sx=cx+x1*scale*persp,sy=cy+y1*scale*persp;
+      const depth=(z2+1)/2;let r=(mobile?1.0:1.15)*persp*(0.5+depth*0.9);if(!(r>0.05))r=0.05;let a=0.18+depth*0.62;if(a<0)a=0;else if(a>1)a=1;
+      const cr=Math.round(40+depth*60),cg=Math.round(120+depth*100),cb=Math.round(235+depth*20);
+      ctx.beginPath();ctx.fillStyle='rgba('+cr+','+cg+','+cb+','+a+')';ctx.arc(sx,sy,r,0,7);ctx.fill();}
+    ctx.globalCompositeOperation='source-over';requestAnimationFrame(frame);
   }
   frame();
 })();
@@ -135,7 +110,7 @@ window.addEventListener("load",()=>{
   tl.to(preLogo,{y:0,opacity:1,duration:0.6,ease:"power3.out"})
     .to(preSub,{opacity:1,duration:0.4},"-=0.2")
     .to(preFill,{width:"100%",duration:1.4,ease:"power2.inOut"},"-=0.3")
-    .to({},"+=0.2");
+    .to({},{duration:0.2});
 
   function runHero(){
     const htl=gsap.timeline();
@@ -292,4 +267,23 @@ document.querySelectorAll(".lang-btn").forEach(btn=>{
   document.addEventListener("keydown", function(e){
     if(e.key === "Escape" && overlay.classList.contains("open")) closeCase();
   });
+})();
+
+/* ===== CASE RING CARDS: count-up + arc on view ===== */
+(function(){
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const R=42, C=2*Math.PI*R;
+  const cards=document.querySelectorAll('.cases .case-card[data-case]');
+  cards.forEach(card=>{const p=card.querySelector('.mr-prog'); if(p){p.style.strokeDasharray=C;p.style.strokeDashoffset=C;}});
+  function run(card){
+    const arc=+(card.getAttribute('data-arc')||0), p=card.querySelector('.mr-prog');
+    if(p){p.style.transition='stroke-dashoffset 1.3s cubic-bezier(.2,.7,.2,1)';requestAnimationFrame(()=>{p.style.strokeDashoffset=0;});}
+    card.querySelectorAll('.mr-num[data-to]').forEach(n=>{const to=+n.dataset.to;
+      if(reduce){n.textContent=to;return;}
+      const dur=1100,t0=performance.now();
+      (function tick(t){const k=Math.min(1,(t-t0)/dur);const e=1-Math.pow(1-k,3);n.textContent=Math.round(to*e);if(k<1)requestAnimationFrame(tick);})(t0);});
+  }
+  if(!('IntersectionObserver' in window)){cards.forEach(run);return;}
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){run(e.target);io.unobserve(e.target);}});},{threshold:.35});
+  cards.forEach(c=>io.observe(c));
 })();
